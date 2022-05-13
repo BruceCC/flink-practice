@@ -9,7 +9,6 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.Properties;
 
 /**
@@ -21,8 +20,8 @@ public class File2KafkaUtil {
     public static void main(String[] args) {
         String bootstrapServers = "localhost:9092";
         String topic = "hotitems";
-        //String filePath = "G:/Download/Software/UserBehavior.csv/UserBehavior.csv";
-        String filePath = "G:/Download/Software/UserBehavior.csv/sample.csv";
+        //String filePath = "D:/workspace/test-data/UserBehavior/UserBehavior.csv";
+        String filePath = "data/sample.csv";
         file2Kafka(bootstrapServers, topic, filePath);
     }
 
@@ -37,34 +36,23 @@ public class File2KafkaUtil {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
         KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(properties);
-        File file = null;
-        BufferedReader bufferReader = null;
 
         try {
-            file = new File(filePath);
-            bufferReader = new BufferedReader(new FileReader(file));
-            String line = null;
+            File file = new File(filePath);
+            BufferedReader bufferReader = new BufferedReader(new FileReader(file));
+            String line;
             while ((line = bufferReader.readLine()) != null) {
-                ProducerRecord record = new ProducerRecord<String, String>(topic, line);
+                ProducerRecord<String, String> record = new ProducerRecord<>(topic, line);
                 log.info("send to kafka, data: {}", line);
                 kafkaProducer.send(record).get();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
+
+            bufferReader.close();
+            kafkaProducer.close();
             long end = System.currentTimeMillis();
             log.info("File data to kafka finished, elapsed time " + (end -start)/1000 + "s");
-
-            kafkaProducer.close();
-            if (null != bufferReader) {
-                try {
-                    bufferReader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-
     }
 }

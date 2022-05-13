@@ -1,5 +1,6 @@
 package org.leave.flink.practice.analysisi.hotitems.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -14,7 +15,8 @@ import java.util.Properties;
  * @Author BruceCC Zhong
  * @date 2022/5/7
  */
-public class kafkaConsumerTest {
+@Slf4j
+public class KafkaConsumerTest {
     public static void main(String[] args) {
         Properties properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
