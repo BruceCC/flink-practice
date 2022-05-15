@@ -20,8 +20,8 @@ public class File2KafkaUtil {
     public static void main(String[] args) {
         String bootstrapServers = "localhost:9092";
         String topic = "hotitems";
-        //String filePath = "D:/workspace/test-data/UserBehavior/UserBehavior.csv";
-        String filePath = "data/sample.csv";
+        String filePath = "D:/workspace/test-data/UserBehavior/UserBehavior.csv";
+        //String filePath = "data/sample.csv";
         file2Kafka(bootstrapServers, topic, filePath);
     }
 
@@ -41,6 +41,7 @@ public class File2KafkaUtil {
             File file = new File(filePath);
             BufferedReader bufferReader = new BufferedReader(new FileReader(file));
             String line;
+            log.info("begin read data from file...");
             while ((line = bufferReader.readLine()) != null) {
                 ProducerRecord<String, String> record = new ProducerRecord<>(topic, line);
                 log.debug("send to kafka, data: {}", line);

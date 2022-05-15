@@ -9,8 +9,6 @@ import org.leave.flink.practice.analysisi.hotitems.bean.ItemViewCount;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -18,10 +16,10 @@ import java.util.List;
  * @author BruceCC Zhong
  * @date 2022/5/14 19:34
  */
-public class TopNHotItems extends KeyedProcessFunction<Long, ItemViewCount, String> {
+public class TopNHotItemsProcess extends KeyedProcessFunction<Long, ItemViewCount, String> {
     private int topSize;
 
-    public TopNHotItems(int topSize) {
+    public TopNHotItemsProcess(int topSize) {
         this.topSize = topSize;
     }
 

@@ -13,7 +13,6 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
@@ -22,7 +21,7 @@ import org.leave.flink.practice.analysisi.hotitems.bean.ItemViewCount;
 import org.leave.flink.practice.analysisi.hotitems.bean.UserBehavior;
 import org.leave.flink.practice.analysisi.hotitems.constant.UserBehaviorConstant;
 import org.leave.flink.practice.analysisi.hotitems.function.CountAgg;
-import org.leave.flink.practice.analysisi.hotitems.function.TopNHotItems;
+import org.leave.flink.practice.analysisi.hotitems.function.TopNHotItemsProcess;
 import org.leave.flink.practice.analysisi.hotitems.function.WindowResultAgg;
 
 import java.time.Duration;
@@ -86,9 +85,7 @@ public class HotItemsTask {
                 .aggregate(new CountAgg(), new WindowResultAgg())
                 //按照窗口分组
                 .keyBy((KeySelector<ItemViewCount, Long>) value -> value.getWindowEnd())
-                .process(new TopNHotItems(5));
-
-
+                .process(new TopNHotItemsProcess(5));
 
         // sink
         processedStream.print();

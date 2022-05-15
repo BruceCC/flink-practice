@@ -4,14 +4,13 @@ import lombok.Data;
 
 /**
  * @author BruceCC Zhong
- * @date 2022/5/13 23:25
- * 用户行为
+ * @date 2022/5/15 12:10
+ * 市场用户行为
  */
 @Data
-public class UserBehavior {
+public class MarketingUserBehavior {
     private Long userId;
-    private Long itemId;
-    private Integer categoryId;
     private String behavior;
+    private String channel;
     private Long timestamp;
 }
