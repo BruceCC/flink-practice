@@ -43,7 +43,7 @@ public class File2KafkaUtil {
             String line;
             while ((line = bufferReader.readLine()) != null) {
                 ProducerRecord<String, String> record = new ProducerRecord<>(topic, line);
-                log.info("send to kafka, data: {}", line);
+                log.debug("send to kafka, data: {}", line);
                 kafkaProducer.send(record).get();
             }
 

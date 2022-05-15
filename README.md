@@ -1,6 +1,6 @@
 ### flink电商用户行为分析示例
 > 基于Flink 1.14.4实现
-### 本项目是参考 https://github.com/BruceCC/user-behavior-analysis 进行了简单改写
+### 本项目是参考 https://github.com/BruceCC/user-behavior-analysis 使用最新的flink版本进行了代码重构
 #### 主要数据使用了阿里天池数据集
 > UserBehavior.csv
 >
