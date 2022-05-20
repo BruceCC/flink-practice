@@ -29,25 +29,25 @@ import java.time.Duration;
 @Slf4j
 public class LoginFailWithCepTask {
     public static void main(String[] args) throws Exception {
-//创建上下文环境
+        //创建上下文环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
         DataStream<String> sourceStream = env.readTextFile("data/LoginLog.csv");
 
 
         KeyedStream<LoginEvent, Long> loginEventStream = sourceStream.map((MapFunction<String, LoginEvent>) value -> {
-                    try {
-                        String[] splits = value.split(",");
-                        LoginEvent loginEvent = new LoginEvent();
-                        loginEvent.setUserId(Long.parseLong(splits[0].trim()));
-                        loginEvent.setIp(splits[1].trim());
-                        loginEvent.setEventType(splits[2].trim().toLowerCase());
-                        loginEvent.setEventTime(Long.parseLong(splits[3].trim()));
-                        return loginEvent;
-                    } catch (Exception e) {
-                        log.error("dirty record, data: " + value);
-                        return null;
-                    }
-                })
+            try {
+                String[] splits = value.split(",");
+                LoginEvent loginEvent = new LoginEvent();
+                loginEvent.setUserId(Long.parseLong(splits[0].trim()));
+                loginEvent.setIp(splits[1].trim());
+                loginEvent.setEventType(splits[2].trim().toLowerCase());
+                loginEvent.setEventTime(Long.parseLong(splits[3].trim()));
+                return loginEvent;
+            } catch (Exception e) {
+                log.error("dirty record, data: " + value);
+                return null;
+            }
+        })
                 .filter((FilterFunction<LoginEvent>) value -> null != value)
                 .assignTimestampsAndWatermarks(WatermarkStrategy.<LoginEvent>forBoundedOutOfOrderness(Duration.ofSeconds(5)).withTimestampAssigner((SerializableTimestampAssigner<LoginEvent>) (element, recordTimestamp) -> element.getEventTime()))
                 .keyBy((KeySelector<LoginEvent, Long>) value -> value.getUserId());

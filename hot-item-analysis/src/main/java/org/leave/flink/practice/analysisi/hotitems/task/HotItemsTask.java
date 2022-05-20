@@ -20,9 +20,9 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.leave.flink.practice.analysisi.hotitems.bean.ItemViewCount;
 import org.leave.flink.practice.analysisi.hotitems.bean.UserBehavior;
 import org.leave.flink.practice.analysisi.hotitems.constant.UserBehaviorConstant;
-import org.leave.flink.practice.analysisi.hotitems.function.CountAgg;
+import org.leave.flink.practice.analysisi.hotitems.function.ItemViewCountAgg;
 import org.leave.flink.practice.analysisi.hotitems.function.TopNHotItemsProcess;
-import org.leave.flink.practice.analysisi.hotitems.function.WindowResultAgg;
+import org.leave.flink.practice.analysisi.hotitems.function.ItemViewWindowResultAgg;
 
 import java.time.Duration;
 import java.util.Properties;
@@ -54,25 +54,24 @@ public class HotItemsTask {
                 .setDeserializer(KafkaRecordDeserializationSchema.valueOnly(StringDeserializer.class))
                 .build();
 
-
         //获取数据源
         DataStreamSource<String> sourceStream = env.fromSource(kafkaSource, WatermarkStrategy.noWatermarks(), "Kafka Source").setParallelism(1);
         //获取PV数据
         SingleOutputStreamOperator<UserBehavior> dataStream = sourceStream.map((MapFunction<String, UserBehavior>) value -> {
-                    try {
-                        String[] splits = value.split(",");
-                        UserBehavior userBehavior = new UserBehavior();
-                        userBehavior.setUserId(Long.parseLong(splits[0].trim()));
-                        userBehavior.setItemId(Long.parseLong(splits[1].trim()));
-                        userBehavior.setCategoryId(Integer.parseInt(splits[2].trim()));
-                        userBehavior.setBehavior(splits[3].trim().toLowerCase());
-                        userBehavior.setTimestamp(Long.parseLong(splits[4].trim()) * 1000L);
-                        return userBehavior;
-                    } catch (Exception e) {
-                        log.error("Dirty data: " + value);
-                        return null;
-                    }
-                })
+            try {
+                String[] splits = value.split(",");
+                UserBehavior userBehavior = new UserBehavior();
+                userBehavior.setUserId(Long.parseLong(splits[0].trim()));
+                userBehavior.setItemId(Long.parseLong(splits[1].trim()));
+                userBehavior.setCategoryId(Integer.parseInt(splits[2].trim()));
+                userBehavior.setBehavior(splits[3].trim().toLowerCase());
+                userBehavior.setTimestamp(Long.parseLong(splits[4].trim()) * 1000L);
+                return userBehavior;
+            } catch (Exception e) {
+                log.error("Dirty data: " + value);
+                return null;
+            }
+        })
                 .filter((FilterFunction<UserBehavior>) value -> null != value)
                 .filter((FilterFunction<UserBehavior>) value -> UserBehaviorConstant.PV.equals(value.getBehavior()))
                 .assignTimestampsAndWatermarks(WatermarkStrategy.<UserBehavior>forBoundedOutOfOrderness(Duration.ofSeconds(5)).withTimestampAssigner((SerializableTimestampAssigner<UserBehavior>) (element, recordTimestamp) -> element.getTimestamp()));
@@ -82,7 +81,8 @@ public class HotItemsTask {
                 //.window(SlidingEventTimeWindows.of(Time.hours(1), Time.minutes(5)))
                 .window(SlidingEventTimeWindows.of(Time.minutes(10), Time.minutes(3)))
                 //窗口聚合
-                .aggregate(new CountAgg(), new WindowResultAgg())
+                //WindowResultAgg输入数据来自CountAgg，在窗口结束的时候先执行Aggregate对象的getResult，然后再执行 自己的apply对象
+                .aggregate(new ItemViewCountAgg(), new ItemViewWindowResultAgg())
                 //按照窗口分组
                 .keyBy((KeySelector<ItemViewCount, Long>) value -> value.getWindowEnd())
                 .process(new TopNHotItemsProcess(5));

@@ -10,7 +10,7 @@ import org.leave.flink.practice.analysisi.hotitems.bean.ItemViewCount;
  * @date 2022/5/14 17:18
  * 自定义窗口函数，输出ItemViewCount
  */
-public class WindowResultAgg implements WindowFunction<Long, ItemViewCount, Long, TimeWindow> {
+public class ItemViewWindowResultAgg implements WindowFunction<Long, ItemViewCount, Long, TimeWindow> {
     @Override
     public void apply(Long aLong, TimeWindow window, Iterable<Long> input, Collector<ItemViewCount> out) {
         ItemViewCount itemViewCount = new ItemViewCount();

@@ -8,7 +8,7 @@ import lombok.Data;
  * 市场浏览统计
  */
 @Data
-public class MarketingViewCount {
+public class AppMarketViewCount {
     private String windowStart;
     private String windowEnd;
     private String channel;

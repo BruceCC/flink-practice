@@ -27,7 +27,6 @@ public class TopNHotItemsProcess extends KeyedProcessFunction<Long, ItemViewCoun
 
     /**
      * 定时器触发时，对所有数据进行排序并输出结果
-     *
      */
     @Override
     public void onTimer(long timestamp, KeyedProcessFunction<Long, ItemViewCount, String>.OnTimerContext ctx, Collector<String> out) throws Exception {
@@ -44,10 +43,12 @@ public class TopNHotItemsProcess extends KeyedProcessFunction<Long, ItemViewCoun
         // 清空状态
         itemState.clear();
         // topN 输出
-        StringBuilder result =new StringBuilder();
+        StringBuilder result = new StringBuilder();
         result.append("current time: ").append(new Timestamp(timestamp - 1)).append("\n");
         for (int i = 0; i < topSize; i++) {
-            if (i >= allItems.size()) continue;
+            if (i >= allItems.size()) {
+                continue;
+            }
             ItemViewCount itemViewCount = allItems.get(i);
             result.append("No").append(i + 1).append(":")
                     .append(" itemId = ").append(itemViewCount.getItemId())

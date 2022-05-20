@@ -28,6 +28,10 @@ public class LoginWarningProcess extends KeyedProcessFunction<Long, LoginEvent, 
     }
 
 
+    /**
+     * 流中的每一个元素都会调用这个方法，调用结果将会放在Collector 数据类型中输出
+     * Context可以访问元素的时间戳，元素的key,以及TimerService时间服务。Context还可以将结果输出到别的流(sideoutputs)
+     */
     @Override
     public void processElement(LoginEvent value, KeyedProcessFunction<Long, LoginEvent, LoginWarning>.Context ctx, Collector<LoginWarning> out) throws Exception {
         if ("fail".equalsIgnoreCase(value.getEventType())) {
@@ -36,8 +40,8 @@ public class LoginWarningProcess extends KeyedProcessFunction<Long, LoginEvent, 
             if (iterator.hasNext()) {
                 // 如果之前已经有登录失败事件，就比较事件时间
                 LoginEvent lastLoginEvent = iterator.next();
-                // todo 需考虑数据乱序的问题（应结合watermask）以及登录失败次数 这里是2次 若是超过2呢
-                if (value.getEventTime() - lastLoginEvent.getEventTime() > 2000) {
+                // todo 需考虑数据乱序的问题（应结合watermark）以及登录失败次数 这里是2次 若是超过2呢
+                if (value.getEventTime() - lastLoginEvent.getEventTime() < 2000) {
                     // 如果两次间隔小于2s，输出报警
                     LoginWarning loginWarning = new LoginWarning();
                     loginWarning.setUserId(value.getUserId());
@@ -48,17 +52,21 @@ public class LoginWarningProcess extends KeyedProcessFunction<Long, LoginEvent, 
                 }
                 // 更新最近一次的登录失败事件，保存到状态中
                 loginFailListState.clear();
-                loginFailListState.add(value);
-            } else {
-                // 之前没有登录失败事件即第一次登录失败，直接添加到状态
-                loginFailListState.add(value);
             }
+            // 之前没有登录失败事件即第一次登录失败，直接添加到状态
+            loginFailListState.add(value);
         } else {
             // 成功则清除状态
             loginFailListState.clear();
         }
     }
 
+    /**
+     * 回调函数
+     * 当之前注册的定时器触发时调用
+     * 参数timestamp为定时器所设定的触发的时间戳。Collector 为输出结果的集合。
+     * OnTimerContext和processElement的Context参数一样，提供了上下文的一些信息，例如定时器触发的时间信息(事件时间或者处理时间)
+     */
     @Override
     public void onTimer(long timestamp, KeyedProcessFunction<Long, LoginEvent, LoginWarning>.OnTimerContext ctx, Collector<LoginWarning> out) throws Exception {
         super.onTimer(timestamp, ctx, out);
@@ -68,11 +76,11 @@ public class LoginWarningProcess extends KeyedProcessFunction<Long, LoginEvent, 
             allLoginFails.add(loginEvent);
         }
 
-        if (allLoginFails.size() >= maxFailNumber){
+        if (allLoginFails.size() >= maxFailNumber) {
             LoginWarning loginWarning = new LoginWarning();
             loginWarning.setUserId(ctx.getCurrentKey());
             loginWarning.setFirstFailTime(allLoginFails.get(0).getEventTime());
-            loginWarning.setLastFailTime(allLoginFails.get(allLoginFails.size() -1).getEventTime());
+            loginWarning.setLastFailTime(allLoginFails.get(allLoginFails.size() - 1).getEventTime());
             loginWarning.setWarningMsg("login fail in 2s for " + allLoginFails.size());
             out.collect(loginWarning);
         }

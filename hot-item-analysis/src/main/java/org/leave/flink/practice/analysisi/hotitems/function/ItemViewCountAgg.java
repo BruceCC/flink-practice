@@ -8,7 +8,7 @@ import org.leave.flink.practice.analysisi.hotitems.bean.UserBehavior;
  * @date 2022/5/14 16:42
  * 自定义预聚合函数
  */
-public class CountAgg implements AggregateFunction<UserBehavior, Long, Long> {
+public class ItemViewCountAgg implements AggregateFunction<UserBehavior, Long, Long> {
     @Override
     public Long createAccumulator() {
         return 0L;
