@@ -1,6 +1,6 @@
-### flink电商用户行为分析示例
+### flink 用法示例
 > 基于Flink 1.14.4实现
-### 本项目是参考 https://github.com/BruceCC/user-behavior-analysis 使用最新的flink版本进行了代码重构
+### 本项目参考了 https://github.com/BruceCC/user-behavior-analysis 使用最新的flink版本进行了代码重构
 #### 主要数据使用了阿里天池数据集
 > UserBehavior.csv
 >
@@ -46,7 +46,6 @@
 
 
 ##### 1. 热门商品topN
-
 ##### 2. 用户广告点击统计/带黑名单统计
 ##### 3. APP推广渠道实时统计
 ##### 4. pv/uv 布隆过滤器
