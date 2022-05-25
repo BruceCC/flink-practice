@@ -11,4 +11,9 @@ import lombok.Data;
 public class OrderResult {
     private Long orderId;
     private String resultMsg;
+
+    public OrderResult(Long orderId, String resultMsg) {
+        this.orderId = orderId;
+        this.resultMsg = resultMsg;
+    }
 }

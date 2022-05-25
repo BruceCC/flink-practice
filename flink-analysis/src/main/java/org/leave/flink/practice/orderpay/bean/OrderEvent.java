@@ -13,4 +13,11 @@ public class OrderEvent {
     private String eventType;
     private String txId;
     private Long eventTime;
+
+    public OrderEvent(Long orderId, String eventType, String txId, Long eventTime) {
+        this.orderId = orderId;
+        this.eventType = eventType;
+        this.txId = txId;
+        this.eventTime = eventTime;
+    }
 }
