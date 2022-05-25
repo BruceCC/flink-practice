@@ -11,6 +11,11 @@
 
     <artifactId>flink-analysis</artifactId>
 
+    <properties>
+        <jedis.version>4.2.3</jedis.version>
+        <guava.version>31.1-jre</guava.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.flink</groupId>
@@ -51,6 +56,17 @@
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-cep_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>${jedis.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+            <type>bundle</type>
         </dependency>
     </dependencies>
 
