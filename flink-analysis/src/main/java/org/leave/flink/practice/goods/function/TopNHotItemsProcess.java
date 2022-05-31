@@ -1,5 +1,6 @@
 package org.leave.flink.practice.goods.function;
 
+import org.apache.commons.compress.utils.Lists;
 import org.apache.flink.api.common.state.ListState;
 import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.configuration.Configuration;
@@ -23,7 +24,7 @@ public class TopNHotItemsProcess extends KeyedProcessFunction<Long, ItemViewCoun
         this.topSize = topSize;
     }
 
-    private ListState<ItemViewCount> itemState;
+    private ListState<ItemViewCount> itemViewCountListState;
 
     /**
      * 定时器触发时，对所有数据进行排序并输出结果
@@ -32,45 +33,45 @@ public class TopNHotItemsProcess extends KeyedProcessFunction<Long, ItemViewCoun
     public void onTimer(long timestamp, KeyedProcessFunction<Long, ItemViewCount, String>.OnTimerContext ctx, Collector<String> out) throws Exception {
         super.onTimer(timestamp, ctx, out);
         // 将所有state中的数据取出，放到一个List中
-        List<ItemViewCount> allItems = new ArrayList<>();
-        for (ItemViewCount viewCount : itemState.get()) {
-            allItems.add(viewCount);
-        }
+        List<ItemViewCount> itemViewCounts = Lists.newArrayList(itemViewCountListState.get().iterator());
+        /*List<ItemViewCount> itemViewCounts = new ArrayList<>();
+        for (ItemViewCount viewCount : itemViewCountListState.get()) {
+            itemViewCounts .add(viewCount);
+        }*/
 
-        // 按照count大小降序排列并取前N个
-        allItems.sort((o1, o2) -> o1.getCount().compareTo(o2.getCount()));
+        // 从多到少(越热门越前面)
+        itemViewCounts .sort((o1, o2) -> o1.getCount().compareTo(o2.getCount()));
 
-        // 清空状态
-        itemState.clear();
+        // TODO 清空状态
+        itemViewCountListState.clear();
         // topN 输出
         StringBuilder result = new StringBuilder();
-        result.append("current time: ").append(new Timestamp(timestamp - 1)).append("\n");
-        for (int i = 0; i < topSize; i++) {
-            if (i >= allItems.size()) {
-                continue;
-            }
-            ItemViewCount itemViewCount = allItems.get(i);
+        result.append("============================").append(System.lineSeparator());
+        result.append("窗口结束时间：").append(new Timestamp(timestamp - 1)).append(System.lineSeparator());
+        for (int i = 0; i < Math.min(topSize, itemViewCounts.size()); i++) {
+            ItemViewCount itemViewCount = itemViewCounts .get(i);
             result.append("No").append(i + 1).append(":")
-                    .append(" itemId = ").append(itemViewCount.getItemId())
-                    .append(" pv = ").append(itemViewCount.getCount()).append("\n");
+                    .append(" 商品ID = ").append(itemViewCount.getItemId())
+                    .append(" 热门度 = ").append(itemViewCount.getCount()).append(System.lineSeparator());
         }
+        result.append("============================").append(System.lineSeparator());
         System.out.println(result.toString());
         // 控制输出频率
-        Thread.sleep(1000);
+        Thread.sleep(1000L);
         out.collect(result.toString());
     }
 
     @Override
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
-        itemState = getRuntimeContext().getListState(new ListStateDescriptor<>("itemState", ItemViewCount.class));
+        itemViewCountListState = getRuntimeContext().getListState(new ListStateDescriptor<>("item-view-count-list", ItemViewCount.class));
     }
 
     @Override
     public void processElement(ItemViewCount value, KeyedProcessFunction<Long, ItemViewCount, String>.Context ctx, Collector<String> out) throws Exception {
         // 把每条数据存入状态列表
-        itemState.add(value);
-        // 注册一个定时器
+        itemViewCountListState.add(value);
+        // 注册一个定时器模拟等待，所以这里时间设的比较短(1ms)
         ctx.timerService().registerEventTimeTimer(value.getWindowEnd() + 1);
     }
 }
