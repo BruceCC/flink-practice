@@ -8,14 +8,14 @@ import lombok.Data;
  * 市场浏览统计
  */
 @Data
-public class AppMarketViewCount {
+public class MarketViewCount {
     private String windowStart;
     private String windowEnd;
     private String channel;
     private String behavior;
     private Long count;
 
-    public AppMarketViewCount(String windowStart, String windowEnd, String channel, String behavior, Long count) {
+    public MarketViewCount(String windowStart, String windowEnd, String channel, String behavior, Long count) {
         this.windowStart = windowStart;
         this.windowEnd = windowEnd;
         this.channel = channel;

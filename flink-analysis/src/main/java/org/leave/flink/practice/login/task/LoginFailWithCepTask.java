@@ -66,6 +66,14 @@ public class LoginFailWithCepTask {
             }
         }).within(Time.seconds(2));
 
+        //循环模式
+        /*Pattern<LoginEvent, LoginEvent> loginFailPattern = Pattern.<LoginEvent>begin("begin").where(new IterativeCondition<LoginEvent>() {
+            @Override
+            public boolean filter(LoginEvent value, Context ctx) throws Exception {
+                return "fail".equalsIgnoreCase(value.getEventType());
+            }
+        }).times(3).consecutive().within(Time.seconds(2));*/
+
         //应用模式
         PatternStream<LoginEvent> patternStream = CEP.pattern(loginEventStream, loginFailPattern);
 

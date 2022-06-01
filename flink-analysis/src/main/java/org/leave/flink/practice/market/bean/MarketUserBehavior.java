@@ -8,13 +8,13 @@ import lombok.Data;
  * 市场用户行为
  */
 @Data
-public class AppMarketUserBehavior {
+public class MarketUserBehavior {
     private String userId;
     private String behavior;
     private String channel;
     private Long timestamp;
 
-    public AppMarketUserBehavior(String userId, String behavior, String channel, Long timestamp) {
+    public MarketUserBehavior(String userId, String behavior, String channel, Long timestamp) {
         this.userId = userId;
         this.behavior = behavior;
         this.channel = channel;
